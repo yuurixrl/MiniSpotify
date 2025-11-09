@@ -47,3 +47,92 @@ public class Main {
         System.out.println("0 - Sair");
         System.out.print("Escolha: ");
     }
+
+    private static void listAllSongs() {
+        List<Song> songs = library.getAllSongs();
+        if (songs.isEmpty()) {
+            System.out.println("Nenhuma música cadastrada.");
+            return;
+        }
+        for (int i = 0; i < songs.size(); i++) {
+            System.out.println((i+1) + ". " + songs.get(i).toString());
+        }
+    }
+
+    private static void searchSongs() {
+        System.out.print("Termo de busca: ");
+        String q = scanner.nextLine();
+        List<Song> results = library.searchSongs(q);
+        if (results.isEmpty()) {
+            System.out.println("Nenhum resultado.");
+            return;
+        }
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println((i+1) + ". " + results.get(i).toString());
+        }
+    }
+
+    private static void showPlaylists() {
+        List<Playlist> playlists = currentUser.getPlaylists();
+        if (playlists.isEmpty()) {
+            System.out.println("Você não tem playlists.");
+            return;
+        }
+        for (int i = 0; i < playlists.size(); i++) {
+            System.out.println((i+1) + ". " + playlists.get(i).toString());
+        }
+    }
+
+    private static void createPlaylist() {
+        System.out.print("Nome da nova playlist: ");
+        String name = scanner.nextLine().trim();
+        if (name.isEmpty()) { System.out.println("Nome vazio."); return; }
+        String id = "p" + (currentUser.getPlaylists().size() + 1);
+        currentUser.createPlaylist(id, name);
+        System.out.println("Playlist criada: " + name);
+    }
+
+    private static void addSongToPlaylist() {
+        showPlaylists();
+        System.out.print("Escolha playlist (número): ");
+        int pidx = Integer.parseInt(scanner.nextLine()) - 1;
+        if (pidx < 0 || pidx >= currentUser.getPlaylists().size()) { System.out.println("Índice inválido."); return; }
+        Playlist p = currentUser.getPlaylists().get(pidx);
+
+        listAllSongs();
+        System.out.print("Escolha música (número): ");
+        int sidx = Integer.parseInt(scanner.nextLine()) - 1;
+        if (sidx < 0 || sidx >= library.getAllSongs().size()) { System.out.println("Índice inválido."); return; }
+        Song s = library.getAllSongs().get(sidx);
+
+        p.addSong(s);
+        System.out.println("Adicionado: " + s.getTitle() + " -> " + p.getName());
+    }
+
+    private static void playPlaylist() {
+        showPlaylists();
+        System.out.print("Escolha playlist (número): ");
+        int pidx = Integer.parseInt(scanner.nextLine()) - 1;
+        if (pidx < 0 || pidx >= currentUser.getPlaylists().size()) { System.out.println("Índice inválido."); return; }
+        Playlist p = currentUser.getPlaylists().get(pidx);
+        player.setQueue(p.getSongs());
+        player.play();
+    }
+
+    private static void playerControls() {
+        System.out.println("Comandos: play / pause / next / prev / queue / stop");
+        while (true) {
+            System.out.print("cmd> ");
+            String cmd = scanner.nextLine().trim().toLowerCase();
+            switch (cmd) {
+                case "play": player.play(); break;
+                case "pause": player.pause(); break;
+                case "next": player.next(); break;
+                case "prev": player.previous(); break;
+                case "queue": player.showQueue(); break;
+                case "stop": return;
+                default: System.out.println("Comando inválido."); break;
+            }
+        }
+    }
+}
